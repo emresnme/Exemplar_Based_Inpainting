@@ -61,19 +61,13 @@ axes(handles.axes1);
 imshow(myImage);
 imwrite(myImage,'selected_picture.png');
 set(handles.uibuttongroup_ciz, 'Visible', 'on');
-% mousePos=get(hObject,'CurrentPoint');
-%     disp(['You clicked X:',num2str(mousePos(1)),',  Y:',num2str(mousePos(2))]);
-
 
 % --- Executes on button press in radiobutton_ciz.
 function radiobutton_ciz_Callback(hObject, eventdata, handles)
 % hObject    handle to radiobutton_ciz (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
 % Hint: get(hObject,'Value') returns toggle state of radiobutton_ciz
-
-% DrawMe(); -----------------Çizdirme kodu
 
 handles.DrawStart = 1;
 
