@@ -1,27 +1,22 @@
 
- The Peak-SNR value of 1 is 35.2221
- The SNR value of 1 is 28.3892 
+The Peak-SNR value of 1 is 28.2750
+The SNR value of 1 is 20.0515 
+The SSIM value of 1 is 0.9415 
 
- The SSIM value of 1 is 0.9823 
+The Peak-SNR value of 2 is 28.8507
+The SNR value of 2 is 20.6809 
+The SSIM value of 2 is 0.9489 
 
- The Peak-SNR value of 2 is 35.0366
- The SNR value of 2 is 28.2121 
+The Peak-SNR value of 3 is 23.6316
+The SNR value of 3 is 16.3972 
+The SSIM value of 3 is 0.9339 
 
- The SSIM value of 2 is 0.9825 
+The Peak-SNR value of 4 is 20.2447
+The SNR value of 4 is 13.7313 
+The SSIM value of 4 is 0.8707 
 
- The Peak-SNR value of 3 is 35.6068
- The SNR value of 3 is 28.3344 
+The Peak-SNR value of 5 is 28.3263
+The SNR value of 5 is 20.6194 
+The SSIM value of 5 is 0.9420 
 
- The SSIM value of 3 is 0.9830 
-
- The Peak-SNR value of 4 is 34.9638
- The SNR value of 4 is 27.7889 
-
- The SSIM value of 4 is 0.9815 
-
- The Peak-SNR value of 5 is 35.2275
- The SNR value of 5 is 28.0128 
-
- The SSIM value of 5 is 0.9827 
-
- 5 resmin iþlem süresi toplam 33.5143 saniye sürdü. 
+ 5 resmin iþlem süresi toplam 23.6846 saniye sürdü. 

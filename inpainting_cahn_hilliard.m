@@ -150,8 +150,8 @@ close(writerObj);
 % imshow(denoised_u_end);
 
 [peaksnr, snr] = psnr(u_end, input); %calculate PSNR and SNR
-fprintf(fileID,'\n The Peak-SNR value of %i is %0.4f', iteration_num, peaksnr);
-fprintf(fileID,'\n The SNR value of %i is %0.4f \n',iteration_num, snr);
+fprintf(fileID,'\nThe Peak-SNR value of %i is %0.4f', iteration_num, peaksnr);
+fprintf(fileID,'\nThe SNR value of %i is %0.4f \n',iteration_num, snr);
 
 [ssimval, ssimmap] = ssim(u_end,input);
 fprintf(fileID,'The SSIM value of %i is %0.4f \n',iteration_num, ssimval);

@@ -136,6 +136,9 @@ while nFrame<80
     imshow(img); hold on; box on;
     nFrame = nFrame + 1;
 end
+axes(handles.axes1);
+imshow(img);
+set(handles.text_durum,'String','Maske Cizdirildi.');
 
 
 
@@ -151,10 +154,6 @@ tableData = {xlist(1),ylist(1),SliderLocation};
 set(handles.CoordinateTable,'Data',tableData)
 % Update handles structure
 guidata(hObject, handles)
-if get(handles.uibuttongroup_ciz,'Visible')=='on' && get(handles.radiobutton_ciz, 'Value') == 1
-    axes_position = get(handles.axes1, 'Position');
-    C = get (gca, 'CurrentPoint');
-end
 
 
 % --- Executes on button press in pushbutton_inpaint.
@@ -165,7 +164,7 @@ function pushbutton_inpaint_Callback(hObject, eventdata, handles)
 set(handles.text_ssim_deger, 'Visible', 'on');
 set(handles.text_psnr_deger, 'Visible', 'on');
 set(handles.text_snr_deger, 'Visible', 'on');
-set(handles.text_durum,'String','Icboyama Yapýlýyor.');
+set(handles.text_durum,'String','Icboyama Yapiliyor.');
 imwrite(imresize(imread('selected_picture.png'),[480 640]),'selected_picture_resized.png');%% generic yapýlmalý!!!!!!!!
 [i1,i2,i3,c,d]=inpaint7('selected_picture_resized.png','selected_picture_mask.png',[0 255 0]);
 
@@ -187,7 +186,7 @@ set(handles.text_ssim,'String',ssimval);
 set(handles.text_psnr,'String',peaksnr);
 set(handles.text_snr,'String',snr);
 
-set(handles.text_durum,'String','Icboyama yapýldý.');
+set(handles.text_durum,'String','Icboyama yapildi.');
 guidata(hObject,handles);
 
 
@@ -210,7 +209,7 @@ function radiobutton_mouse_ciz_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of radiobutton_mouse_ciz
-set(handles.text_durum,'String','Maske çiziliyor.');
+set(handles.text_durum,'String','Maske ciziliyor.');
 fontSize = 16;
 fullFileName = 'C:\Users\vega_\Documents\GitHub\Exemplar_Based_Inpainting\selected_picture.png';
 
@@ -264,7 +263,7 @@ if strcmpi(button, 'Yes')
 	caption = sprintf('Çizme hýzýnýza göre maskelenecek piksellerin yeri düzgün olmayabilir.\nYavaþ çiziniz.');
 	title(caption, 'FontSize', fontSize);
 else
-    set(handles.text_durum,'String','Maske henüz kaydedilmedi.');
+    set(handles.text_durum,'String','Maske henuz kaydedilmedi.');
 end
 
 
@@ -273,20 +272,25 @@ function pushbutton_cahn_hilliard_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton_cahn_hilliard (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-clc ; close all ; clear all;
 
 faceDetector=vision.CascadeObjectDetector('FrontalFaceCART'); %Create a detector object
 profileFaceDetector = vision.CascadeObjectDetector('ProfileFace');
 
 % PARAMETERS
-maxiter       = 50;
-param.epsilon = [100 0.9];
-param.lambda  = 10;
-param.dt      = 1;
-frame_number = 5;
+% maxiter       = 50;
+% param.epsilon = [100 0.9];
+% param.lambda  = 10;
+% param.dt      = 1;
+% frame_number = 5;
+
+
+maxiter = str2double(get(handles.edit_iterasyon_sayisi, 'String'));
+param.epsilon = [str2double(get(handles.edit_epsilon_1,'String')) str2double(get(handles.edit_epsilon_2,'String'))];
+param.lambda = str2double(get(handles.edit_lambda,'String'));
+param.dt = str2double(get(handles.edit_dt,'String'));
+frame_number = str2double(get(handles.edit_frame_sayisi,'String'));
 
 cam = webcam
-tic
 
 logfilename = 'C:\Users\vega_\Documents\GitHub\Exemplar_Based_Inpainting\Real_Time_Cahn_Hilliard\log_cahnhilliard.log';
 if exist(logfilename,'file')
@@ -294,6 +298,7 @@ if exist(logfilename,'file')
 end
 fileID = fopen(logfilename,'w');
 
+tic
 for i = 1:frame_number
 img=snapshot(cam);
 img_re = imresize(img,0.25);
@@ -327,11 +332,154 @@ for face_number = 1:pBB_row
     end
 end
 
-imwrite(mask,'C:\Users\vega_\Documents\GitHub\Exemplar_Based_Inpainting\Real_Time_Cahn_Hilliard\mask_cahn_hilliard_face_detection.png');
 maskfilename  = 'C:\Users\vega_\Documents\GitHub\Exemplar_Based_Inpainting\Real_Time_Cahn_Hilliard\mask_cahn_hilliard_face_detection.png';
+imwrite(mask,maskfilename);
 
 inpainting_cahn_hilliard(img_re,maskfilename,maxiter,param,i,fileID);
 end
  t2 = toc;
  fprintf(fileID,'\n %i resmin iþlem süresi toplam %0.4f saniye sürdü. \n', frame_number, t2);
  fclose(fileID);
+ delete(maskfilename);
+ 
+ message = sprintf('Toplanan verileri Real_Time_Cahn_Hilliard dosyasýnda inceleyebilirsiniz.');
+uiwait(msgbox(message));
+ 
+
+
+
+function edit_iterasyon_sayisi_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_iterasyon_sayisi (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_iterasyon_sayisi as text
+%        str2double(get(hObject,'String')) returns contents of edit_iterasyon_sayisi as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_iterasyon_sayisi_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_iterasyon_sayisi (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit_epsilon_1_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_epsilon_1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_epsilon_1 as text
+%        str2double(get(hObject,'String')) returns contents of edit_epsilon_1 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_epsilon_1_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_epsilon_1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit_epsilon_2_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_epsilon_2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_epsilon_2 as text
+%        str2double(get(hObject,'String')) returns contents of edit_epsilon_2 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_epsilon_2_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_epsilon_2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit_lambda_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_lambda (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_lambda as text
+%        str2double(get(hObject,'String')) returns contents of edit_lambda as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_lambda_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_lambda (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit_dt_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_dt (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_dt as text
+%        str2double(get(hObject,'String')) returns contents of edit_dt as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_dt_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_dt (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit_frame_sayisi_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_frame_sayisi (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_frame_sayisi as text
+%        str2double(get(hObject,'String')) returns contents of edit_frame_sayisi as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_frame_sayisi_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_frame_sayisi (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
