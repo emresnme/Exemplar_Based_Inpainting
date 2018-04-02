@@ -54,14 +54,13 @@ function pushbutton_sec_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 [file, path] = uigetfile({'*.png';'*.jpg';'*.jpeg'}, 'Fotoðraf Seçici');
-set(handles.text_durum,'String',sprintf('%s%s%s','"', file, '" secildi.'));
+set(handles.text_durum,'String',sprintf('%s'file);
 
 myImage = imread(fullfile(path,file));
 axes(handles.axes1);
 imshow(myImage);
 imwrite(myImage,'selected_picture.png');
 set(handles.uibuttongroup_ciz, 'Visible', 'on');
-set(handles.pushbutton_inpaint, 'Visible', 'on');
 
 set(handles.text_ssim_deger, 'Visible', 'off');
 set(handles.text_psnr_deger, 'Visible', 'off');
