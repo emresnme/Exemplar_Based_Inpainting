@@ -77,8 +77,6 @@ function radiobutton_ciz_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 % Hint: get(hObject,'Value') returns toggle state of radiobutton_ciz
 
-handles.DrawStart = 1;
-
 redThresh = 0.25;
 
 img = imread('selected_picture.png');
@@ -508,3 +506,47 @@ function edit_maske_sayisi_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in pushbutton_tutarli.
+function pushbutton_tutarli_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_tutarli (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+original_image = imread('selected_picture.png');
+original_image=imresize(original_image,[480,640]);
+selected_picture_mask = imread('selected_picture_mask.png');
+
+mask = zeros(size(original_image,1),size(original_image,2),'uint8');
+for x = 1 : size(original_image,1)
+    for y = 1 : size(original_image, 2)
+        if selected_picture_mask(x,y,1)==0 && selected_picture_mask(x,y,2)==255 && selected_picture_mask(x,y,3)==0
+            mask(x,y) = 1;
+        else
+            mask(x,y) = 0;
+        end
+    end
+end
+
+for radius=1:5
+    for i=1:3
+        image(:,:,i) = original_image(:,:,i) .* (1-mask);
+    end
+    image = inpaint(image, mask, radius);
+    snr(radius) = psnr(image, original_image);
+end
+
+for i=1:3
+    image(:,:,i) = original_image(:,:,i) .* (1-mask);
+end
+best_radius = find(snr==max(snr),1) -1;
+image = inpaint(image, mask, best_radius);
+
+imwrite(image,'inpainted_image.png');
+imshow(image);
+
+figure;
+plot(snr);
+xlabel 'Neighborhood size'
+ylabel 'Peak Signal-Noise Ratio'
