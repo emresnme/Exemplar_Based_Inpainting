@@ -60,7 +60,6 @@ myImage = imread(fullfile(path,file));
 axes(handles.axes1);
 imshow(myImage);
 imwrite(myImage,'selected_picture.png');
-imwrite(imresize(imread('selected_picture.png'),[480 640]),'selected_picture_resized.png');
 set(handles.uibuttongroup_ciz, 'Visible', 'on');
 set(handles.pushbutton_inpaint, 'Visible', 'on');
 set(handles.pushbutton_tutarli, 'Visible', 'on');
@@ -168,6 +167,7 @@ set(handles.text_ssim_deger, 'Visible', 'on');
 set(handles.text_psnr_deger, 'Visible', 'on');
 set(handles.text_snr_deger, 'Visible', 'on');
 set(handles.text_durum,'String','Icboyama Yapiliyor.');
+imwrite(imresize(imread('selected_picture.png'),[480 640]),'selected_picture_resized.png');%% generic yapýlmalý!!!!!!!!
 [i1,i2,i3,c,d]=inpaint7('selected_picture_resized.png','selected_picture_mask.png',[0 255 0]);
 
 figure;
@@ -239,14 +239,13 @@ xy = hFH.getPosition
 % get rid of imfreehand remnant.
 delete(hFH);
 
-kalinlik = str2double(get(handles.edit_maske_kalinligi, 'String'));
-
 hold on; % Keep image, and direction of y axis.
 xCoordinates = xy(:, 1);
 yCoordinates = xy(:, 2);
-plot(xCoordinates, yCoordinates, 'gs', 'LineWidth', kalinlik, 'MarkerSize', kalinlik);
+plot(xCoordinates, yCoordinates, 'gs', 'LineWidth', 10, 'MarkerSize', 10);
 caption = sprintf('Çizme hýzýnýza göre maskelenecek piksellerin yeri düzgün olmayabilir.\nYavaþ çiziniz.');
 title(caption, 'FontSize', fontSize);
+
 promptMessage = sprintf('Maskelemek istediðinizden emin misiniz?');
 titleBarCaption = 'Devam?';
 button = questdlg(promptMessage, titleBarCaption, 'Yes', 'No', 'Yes');
@@ -256,9 +255,9 @@ if strcmpi(button, 'Yes')
     for k = 1 : length(xCoordinates)
 		row = int32(yCoordinates(k));
 		column = int32(xCoordinates(k));
-		img(row-kalinlik:row+kalinlik, column-kalinlik:column+kalinlik,1) = 0;
-        img(row-kalinlik:row+kalinlik, column-kalinlik:column+kalinlik,2) = 255;
-        img(row-kalinlik:row+kalinlik, column-kalinlik:column+kalinlik,3) = 0;
+		img(row-9:row+9, column-9:column+9,1) = 0;
+        img(row-9:row+9, column-9:column+9,2) = 255;
+        img(row-9:row+9, column-9:column+9,3) = 0;
     end
 	imshow(img, []);
     imwrite(img,'selected_picture_mask.png');
@@ -585,30 +584,3 @@ param.lambda = str2double(get(handles.edit_lambda,'String'));
 param.dt = str2double(get(handles.edit_dt,'String'));
 
 inpainting_cahn_hilliard_1('selected_picture_resized.png','cahn_hilliard_mask.png',maxiter,param)
-
-set(handles.text_durum,'String','Cahn-Hilliard Bazlý Ýçboyama yapýldý.');
-
-delete('cahn_hilliard_mask.png');
-
-
-
-function edit_maske_kalinligi_Callback(hObject, eventdata, handles)
-% hObject    handle to edit_maske_kalinligi (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of edit_maske_kalinligi as text
-%        str2double(get(hObject,'String')) returns contents of edit_maske_kalinligi as a double
-
-
-% --- Executes during object creation, after setting all properties.
-function edit_maske_kalinligi_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit_maske_kalinligi (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: edit controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
