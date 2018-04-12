@@ -548,6 +548,15 @@ image = inpaint(image, mask, best_radius);
 
 imwrite(image,'inpainted_image.png');
 imshow(image);
+set(handles.text_ssim_deger, 'Visible', 'on');
+set(handles.text_psnr_deger, 'Visible', 'on');
+set(handles.text_snr_deger, 'Visible', 'on');
+[ssimval, ssimmap] = ssim(imread('inpainted_image.png'),imread('selected_picture_resized.png'));
+set(handles.text_ssim,'String',ssimval);
+
+[peaksnr, nsnr] = psnr(imread('inpainted_image.png'), imread('selected_picture_resized.png'));
+set(handles.text_psnr,'String',peaksnr);
+set(handles.text_snr,'String',nsnr);
 
 figure;
 plot(snr);
@@ -587,6 +596,15 @@ param.dt = str2double(get(handles.edit_dt,'String'));
 inpainting_cahn_hilliard_1('selected_picture_resized.png','cahn_hilliard_mask.png',maxiter,param)
 
 set(handles.text_durum,'String','Cahn-Hilliard Bazlý Ýçboyama yapýldý.');
+set(handles.text_ssim_deger, 'Visible', 'on');
+set(handles.text_psnr_deger, 'Visible', 'on');
+set(handles.text_snr_deger, 'Visible', 'on');
+[ssimval, ssimmap] = ssim(imread('inpainted_image.png'),imread('selected_picture_resized.png'));
+set(handles.text_ssim,'String',ssimval);
+
+[peaksnr, snr] = psnr(imread('inpainted_image.png'), imread('selected_picture_resized.png'));
+set(handles.text_psnr,'String',peaksnr);
+set(handles.text_snr,'String',snr);
 
 delete('cahn_hilliard_mask.png');
 
