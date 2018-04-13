@@ -28,8 +28,11 @@ function main_OpeningFcn(hObject, eventdata, handles, varargin)
 
 % Choose default command line output for main
 handles.output = hObject;
-handles.DrawStart = 0;
 set(handles.uibuttongroup_ciz, 'Visible', 'off');
+addpath('C:\Users\vega_\Documents\GitHub\Exemplar_Based_Inpainting\Tutarli_Tasima_Toolbox',...
+    'C:\Users\vega_\Documents\GitHub\Exemplar_Based_Inpainting\Real_Time_Cahn_Hilliard',...
+    'C:\Users\vega_\Documents\GitHub\Exemplar_Based_Inpainting\Cahn_Hilliard_Toolbox',...
+    'C:\Users\vega_\Documents\GitHub\Exemplar_Based_Inpainting\Ornek_Bazli_Toolbox');
 % Update handles structure
 guidata(hObject, handles);
 
@@ -109,7 +112,7 @@ hVideoIn = vision.VideoPlayer('Name', 'Final Video', ...
                                 'Position', [60+vidInfo.MaxWidth 100 vidInfo.MaxWidth+20 vidInfo.MaxHeight+30]);
                             
                             centX = 1; centY = 1;  % Feature Centroid initialization                            
-set(handles.text_durum,'String','Cizdiriliyor.');
+set(handles.text_durum,'String','Çizdiriliyor.');
 
 maske_sayisi = 0;
 while maske_sayisi<str2double(get(handles.edit_maske_sayisi,'String'));
@@ -141,7 +144,7 @@ while maske_sayisi<str2double(get(handles.edit_maske_sayisi,'String'));
 end
 axes(handles.axes1);
 imshow(img);
-set(handles.text_durum,'String','Maske Cizdirildi.');
+set(handles.text_durum,'String','Maske Çizdirildi.');
 
 
 
@@ -151,7 +154,7 @@ function axes1_ButtonDownFcn(hObject, eventdata, handles)
 % hObject    handle to axes1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-SliderLocation = round(get(handles.slider1,'Value'));
+SliderLocation = round(get(handles.slider_threshold,'Value'));
 [xlist ylist]=ginput(5);
 tableData = {xlist(1),ylist(1),SliderLocation};
 set(handles.CoordinateTable,'Data',tableData)
@@ -167,7 +170,7 @@ function pushbutton_inpaint_Callback(hObject, eventdata, handles)
 set(handles.text_ssim_deger, 'Visible', 'on');
 set(handles.text_psnr_deger, 'Visible', 'on');
 set(handles.text_snr_deger, 'Visible', 'on');
-set(handles.text_durum,'String','Icboyama Yapiliyor.');
+set(handles.text_durum,'String','Ýçboyama yapýlýyor.');
 [i1,i2,i3,c,d]=inpaint7('selected_picture_resized.png','selected_picture_mask.png',[0 255 0]);
 
 figure;
@@ -211,7 +214,7 @@ function radiobutton_mouse_ciz_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of radiobutton_mouse_ciz
-set(handles.text_durum,'String','Maske ciziliyor.');
+set(handles.text_durum,'String','Maske çiziliyor.');
 fontSize = 16;
 fullFileName = 'C:\Users\vega_\Documents\GitHub\Exemplar_Based_Inpainting\selected_picture.png';
 
@@ -609,7 +612,6 @@ set(handles.text_snr,'String',snr);
 delete('cahn_hilliard_mask.png');
 
 
-
 function edit_maske_kalinligi_Callback(hObject, eventdata, handles)
 % hObject    handle to edit_maske_kalinligi (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -629,4 +631,87 @@ function edit_maske_kalinligi_CreateFcn(hObject, eventdata, handles)
 %       See ISPC and COMPUTER.
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in pushbutton_sansli.
+function pushbutton_sansli_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_sansli (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+imshow('selected_picture_resized.png');
+format long g;
+format compact;
+fontSize = 20;
+folder = 'C:\Users\vega_\Documents\GitHub\Exemplar_Based_Inpainting';
+baseFileName = 'selected_picture_resized.png';
+
+fullFileName = fullfile(folder, baseFileName);
+if ~exist(fullFileName, 'file')
+	fullFileName = baseFileName; 
+	if ~exist(fullFileName, 'file')
+		errorMessage = sprintf('Error: %s does not exist.', fullFileName);
+		uiwait(warndlg(errorMessage));
+		return;
+	end
+end
+
+grayImage=imread(fullFileName);
+mask = grayImage;
+[rows, columns, numberOfColorBands] = size(grayImage);
+if numberOfColorBands > 1
+	grayImage = grayImage(:, :, 2);
+end
+
+binaryImage = grayImage < str2double(get(handles.text_threshold_deger,'String'));
+labeledImage = bwlabel(1-binaryImage);
+measurements = regionprops(labeledImage, 'BoundingBox', 'Area');
+
+for k = 1 : length(measurements)
+  thisBB = measurements(k).BoundingBox;
+  rectangle('Position', [thisBB(1),thisBB(2),thisBB(3),thisBB(4)],...
+  'EdgeColor','r','LineWidth',2 )
+end
+
+allAreas = [measurements.Area];
+[sortedAreas, sortingIndexes] = sort(allAreas, 'descend');
+handIndex = sortingIndexes(1);
+handImage = ismember(labeledImage, handIndex) 
+handImage = handImage > 0;
+
+for x=1:size(grayImage,1)
+    for y=1:size(grayImage,2)
+        if handImage(x,y) == 1
+            mask(x,y,1)=0;
+            mask(x,y,2)=255;
+            mask(x,y,3)=0;
+        end
+    end
+end
+imwrite(mask,'selected_picture_mask.png');
+imshow(mask);
+set(handles.text_durum,'String','Olasý maske kaydedildi.');
+
+
+% --- Executes on slider movement.
+function slider_threshold_Callback(hObject, eventdata, handles)
+% hObject    handle to slider_threshold (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'Value') returns position of slider
+%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+slider_degeri = get(hObject,'Value');
+set(handles.text_threshold_deger,'String',num2str(slider_degeri));
+
+
+% --- Executes during object creation, after setting all properties.
+function slider_threshold_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to slider_threshold (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: slider controls usually have a light gray background.
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
