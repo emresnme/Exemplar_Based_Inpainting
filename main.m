@@ -676,12 +676,12 @@ end
 allAreas = [measurements.Area];
 [sortedAreas, sortingIndexes] = sort(allAreas, 'descend');
 handIndex = sortingIndexes(1);
-handImage = ismember(labeledImage, handIndex) 
-handImage = handImage > 0;
+theObject = ismember(labeledImage, handIndex) 
+theObject = theObject > 0;
 
 for x=1:size(grayImage,1)
     for y=1:size(grayImage,2)
-        if handImage(x,y) == 1
+        if theObject(x,y) == 1
             mask(x,y,1)=0;
             mask(x,y,2)=255;
             mask(x,y,3)=0;
@@ -715,3 +715,112 @@ function slider_threshold_CreateFcn(hObject, eventdata, handles)
 if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
+
+
+% --- Executes on button press in pushbutton_yuz_bul.
+function pushbutton_yuz_bul_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_yuz_bul (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+faceDetector=vision.CascadeObjectDetector('FrontalFaceCART'); %Create a detector object
+se = strel('disk',10);
+
+img=imread('selected_picture_resized.png'); %Read input image
+mask = img;
+img=rgb2gray(img); % convert to gray
+BB=step(faceDetector,img); % Detect faces
+
+face_edge = edge(img(BB(2)-(BB(4)/4):BB(2)+(BB(4)/4)+BB(4),BB(1)-(BB(3)/4):BB(1)+(BB(3)/4)+BB(3)),'canny',...
+    str2double(get(handles.text_thr_edge_deger,'String')));
+face_edge = bwmorph(bwmorph(imfill(imclose(bwmorph(face_edge,'thicken',10),se),'holes'),'shrink',5),'spur');
+
+for x=1:size(face_edge,1)
+    for y=1:size(face_edge,2)
+        if face_edge(x,y) == 1
+            mask(round(BB(2)-(BB(4)/4))+x,round(BB(1)-(BB(3)/4))+y,1)=0;
+            mask(round(BB(2)-(BB(4)/4))+x,round(BB(1)-(BB(3)/4))+y,2)=255;
+            mask(round(BB(2)-(BB(4)/4))+x,round(BB(1)-(BB(3)/4))+y,3)=0;
+        end
+    end
+end
+imwrite(mask,'selected_picture_mask.png');
+imshow(mask);
+set(handles.text_durum,'String','Yüz maske olarak kaydedildi.');
+
+% --- Executes on slider movement.
+function slider_threshold_edge_Callback(hObject, eventdata, handles)
+% hObject    handle to slider_threshold_edge (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'Value') returns position of slider
+%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+slider_degeri = get(hObject,'Value');
+set(handles.text_thr_edge_deger,'String',num2str(slider_degeri));
+
+
+% --- Executes during object creation, after setting all properties.
+function slider_threshold_edge_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to slider_threshold_edge (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: slider controls usually have a light gray background.
+if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor',[.9 .9 .9]);
+end
+
+
+% --- Executes on button press in pushbutton_insan_bul.
+function pushbutton_insan_bul_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_insan_bul (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+peopleDetector = vision.PeopleDetector;
+se = strel('disk',10);
+
+img=imread('selected_picture_resized.png'); %Read input image
+mask = img;
+img=rgb2gray(img); % convert to gray
+BB=step(peopleDetector,img); % Detect faces
+
+a = round(BB(2)-(BB(4)/4));
+b = round(BB(1)-(BB(3)/4));
+
+body_edge = edge(img( a : BB(2)+(BB(4)/4)+BB(4), b : BB(1)+(BB(3)/4)+BB(3)),'canny',...
+    str2double(get(handles.text_thr_edge_deger,'String')));
+body_edge = bwmorph(bwmorph(imfill(imclose(bwmorph(body_edge,'thicken',10),se),'holes'),'shrink',5),'spur');
+
+
+labeledImage = bwlabel(body_edge);
+measurements = regionprops(labeledImage, 'BoundingBox', 'Area');
+
+allAreas = [measurements.Area];
+[sortedAreas, sortingIndexes] = sort(allAreas, 'descend');
+handIndex = sortingIndexes(1);
+theObject = ismember(labeledImage, handIndex) 
+theObject = theObject > 0;
+
+for x=1:size(theObject,1)
+    for y=1:size(theObject,2)
+        if theObject(x,y) == 1
+            mask(a+x,b+y,1)=0;
+            mask(a+x,b+y,2)=255;
+            mask(a+x,b+y,3)=0;
+        end
+    end
+end
+
+
+% for x=1:size(body_edge,1)
+%     for y=1:size(body_edge,2)
+%         if body_edge(x,y) == 1
+%             mask(a+x,b+y,1)=0;
+%             mask(a+x,b+y,2)=255;
+%             mask(a+x,b+y,3)=0;
+%         end
+%     end
+% end
+imwrite(mask,'selected_picture_mask.png');
+imshow(mask);
+set(handles.text_durum,'String','Ýnsan maske olarak kaydedildi.');
