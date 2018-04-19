@@ -730,6 +730,12 @@ mask = img;
 img=rgb2gray(img); % convert to gray
 BB=step(faceDetector,img); % Detect faces
 
+if size(BB,1) == 0
+		errorMessage = 'Fotoðrafta yüz bulunamadý.';
+		uiwait(warndlg(errorMessage));
+		return;
+end
+
 face_edge = edge(img(BB(2)-(BB(4)/4):BB(2)+(BB(4)/4)+BB(4),BB(1)-(BB(3)/4):BB(1)+(BB(3)/4)+BB(3)),'canny',...
     str2double(get(handles.text_thr_edge_deger,'String')));
 face_edge = bwmorph(bwmorph(imfill(imclose(bwmorph(face_edge,'thicken',10),se),'holes'),'shrink',5),'spur');
@@ -784,10 +790,18 @@ mask = img;
 img=rgb2gray(img); % convert to gray
 BB=step(peopleDetector,img); % Detect faces
 
-a = round(BB(2)-(BB(4)/4));
-b = round(BB(1)-(BB(3)/4));
+if size(BB,1) == 0
+		errorMessage = 'Fotoðrafta insan bulunamadý.';
+		uiwait(warndlg(errorMessage));
+		return;
+end
 
-body_edge = edge(img( a : BB(2)+(BB(4)/4)+BB(4), b : BB(1)+(BB(3)/4)+BB(3)),'canny',...
+a = round(BB(2));
+b = round(BB(1));
+c = round(BB(2)+BB(4));
+d = round(BB(1)+BB(3));
+
+body_edge = edge(img( a : c, b : d),'canny',...
     str2double(get(handles.text_thr_edge_deger,'String')));
 body_edge = bwmorph(bwmorph(imfill(imclose(bwmorph(body_edge,'thicken',10),se),'holes'),'shrink',5),'spur');
 
@@ -801,9 +815,9 @@ handIndex = sortingIndexes(1);
 theObject = ismember(labeledImage, handIndex) 
 theObject = theObject > 0;
 
-for x=1:size(theObject,1)
-    for y=1:size(theObject,2)
-        if theObject(x,y) == 1
+for x = 0 : size(theObject,1)-1
+    for y = 0 : size(theObject,2)-1
+        if theObject(x+1,y+1) == 1
             mask(a+x,b+y,1)=0;
             mask(a+x,b+y,2)=255;
             mask(a+x,b+y,3)=0;
@@ -811,16 +825,6 @@ for x=1:size(theObject,1)
     end
 end
 
-
-% for x=1:size(body_edge,1)
-%     for y=1:size(body_edge,2)
-%         if body_edge(x,y) == 1
-%             mask(a+x,b+y,1)=0;
-%             mask(a+x,b+y,2)=255;
-%             mask(a+x,b+y,3)=0;
-%         end
-%     end
-% end
 imwrite(mask,'selected_picture_mask.png');
 imshow(mask);
 set(handles.text_durum,'String','Ýnsan maske olarak kaydedildi.');
