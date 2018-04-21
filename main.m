@@ -736,19 +736,34 @@ if size(BB,1) == 0
 		return;
 end
 
-face_edge = edge(img(BB(2)-(BB(4)/4):BB(2)+(BB(4)/4)+BB(4),BB(1)-(BB(3)/4):BB(1)+(BB(3)/4)+BB(3)),'canny',...
+a = round(BB(2)-(BB(4)/4));
+b = round(BB(1)-(BB(3)/4));
+c = round(BB(2)+(BB(4)/4)+BB(4));
+d = round(BB(1)+(BB(3)/4)+BB(3));
+
+face_edge = edge(img(a:c,b:d),'canny',...
     str2double(get(handles.text_thr_edge_deger,'String')));
 face_edge = bwmorph(bwmorph(imfill(imclose(bwmorph(face_edge,'thicken',10),se),'holes'),'shrink',5),'spur');
 
-for x=1:size(face_edge,1)
-    for y=1:size(face_edge,2)
-        if face_edge(x,y) == 1
-            mask(round(BB(2)-(BB(4)/4))+x,round(BB(1)-(BB(3)/4))+y,1)=0;
-            mask(round(BB(2)-(BB(4)/4))+x,round(BB(1)-(BB(3)/4))+y,2)=255;
-            mask(round(BB(2)-(BB(4)/4))+x,round(BB(1)-(BB(3)/4))+y,3)=0;
+labeledImage = bwlabel(face_edge);
+measurements = regionprops(labeledImage, 'BoundingBox', 'Area');
+
+allAreas = [measurements.Area];
+[sortedAreas, sortingIndexes] = sort(allAreas, 'descend');
+handIndex = sortingIndexes(1);
+theObject = ismember(labeledImage, handIndex) 
+theObject = theObject > 0;
+
+for x = 0 : size(theObject,1)-1
+    for y = 0 : size(theObject,2)-1
+        if theObject(x+1,y+1) == 1
+            mask(a+x,b+y,1)=0;
+            mask(a+x,b+y,2)=255;
+            mask(a+x,b+y,3)=0;
         end
     end
 end
+
 imwrite(mask,'selected_picture_mask.png');
 imshow(mask);
 set(handles.text_durum,'String','Yüz maske olarak kaydedildi.');
@@ -801,7 +816,7 @@ b = round(BB(1));
 c = round(BB(2)+BB(4));
 d = round(BB(1)+BB(3));
 
-body_edge = edge(img( a : c, b : d),'canny',...
+body_edge = edge(img( a : c, b : d ),'canny',...
     str2double(get(handles.text_thr_edge_deger,'String')));
 body_edge = bwmorph(bwmorph(imfill(imclose(bwmorph(body_edge,'thicken',10),se),'holes'),'shrink',5),'spur');
 

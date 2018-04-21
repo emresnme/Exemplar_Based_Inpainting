@@ -77,7 +77,7 @@ end
 mask         = double(mask);
 u0           = double(input);
 noise        = mat2gray(randn(size(u0)));
-% u0(~mask)    = noise(~mask);
+u0(~mask)    = noise(~mask);
 
 %% PARAMETERS
 h1           = 1;
