@@ -37,8 +37,6 @@ addpath('C:\Users\vega_\Documents\GitHub\Exemplar_Based_Inpainting\Tutarli_Tasim
     'C:\Users\vega_\Documents\GitHub\Exemplar_Based_Inpainting\Gaussian_Toolbox');
 % Update handles structure
 guidata(hObject, handles);
-
-
 % UIWAIT makes main wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 
@@ -70,7 +68,6 @@ set(handles.uibuttongroup_ciz, 'Visible', 'on');
 set(handles.pushbutton_inpaint, 'Visible', 'on');
 set(handles.pushbutton_tutarli, 'Visible', 'on');
 set(handles.pushbutton_cahn_hilliard_1, 'Visible', 'on');
-set(handles.pushbutton_gaussian, 'Visible', 'on');
 
 set(handles.text_ssim_deger, 'Visible', 'off');
 set(handles.text_psnr_deger, 'Visible', 'off');
@@ -805,7 +802,6 @@ function pushbutton_insan_bul_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 peopleDetector = vision.PeopleDetector;
-detector = peopleDetectorACF;
 se = strel('disk',10);
 
 img=imread('selected_picture_resized.png'); %Read input image
@@ -813,8 +809,8 @@ mask = img;
 img=rgb2gray(img); % convert to gray
 BB=step(peopleDetector,img); % Detect people
 
-
-[BB,scores] = detect(detector,img);
+% detector = peopleDetectorACF;
+% [BB,scores] = detect(detector,img);
 
 if size(BB,1) == 0
 		errorMessage = 'Fotoðrafta insan bulunamadý.';
@@ -832,7 +828,6 @@ d = round(BB(k,1)+BB(k,3));
 body_edge = edge(img( a : c, b : d ),'canny',...
     str2double(get(handles.text_thr_edge_deger,'String')));
 body_edge = bwmorph(bwmorph(imfill(imclose(bwmorph(body_edge,'thicken',10),se),'holes'),'shrink',5),'spur');
-
 
 labeledImage = bwlabel(body_edge);
 measurements = regionprops(labeledImage, 'BoundingBox', 'Area');
@@ -858,70 +853,3 @@ end
 imwrite(mask,'selected_picture_mask.png');
 imshow(mask);
 set(handles.text_durum,'String','Ýnsan maske olarak kaydedildi.');
-
-
-% --- Executes on button press in pushbutton_gaussian.
-function pushbutton_gaussian_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton_gaussian (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% u = im2double(imread('selected_picture_resized.png'));
-% [M,N,C] = size(u);
-% 
-% indm = zeros(M,N,C);
-% selected_picture_mask = imread('selected_picture_mask.png');
-% 
-% for x = 1 : M
-%     for y = 1 : N
-%         if selected_picture_mask(x,y,1)==0 && selected_picture_mask(x,y,2)==255 && selected_picture_mask(x,y,3)==0
-%             indm(x,y,:) = 1;
-%         else
-%             indm(x,y,:) = 0;
-%         end
-%     end
-% end
-% 
-% indc = get_conditioning_points(indm,3);
-% figure
-% imshow(double(indc))
-% title('Conditioning points')
-% 
-% % xo1 = 1; yo1 = 1;
-% % xo2 = N; yo2 = y1-1;
-% 
-% [t,m] = estimate_adsn_model(u,M,N);
-% 
-% 
-% % uw = draw_rectangle(u,xo1,xo2,yo1,yo2,2);
-% % figure
-% % imshow(uw.*(1-indm))
-% % title(sprintf('Masked original. ADSN estimated in the red box'))
-% 
-% z = adsn_periodic(t,repmat(m,[M N 1]));
-% 
-% figure
-% imshow(z)
-% title('Realization of the ADSN model')
-% 
-% [v,kc,innov] = gaussian_inpainting(u.*(1-indm),m,t,indm,indc);
-% 
-% figure
-% imshow(u.*(1-indm));
-% title('Masked texture')
-% drawnow
-% 
-% figure
-% imshow(v);
-% title('Inpainted')
-% drawnow
-% 
-% figure
-% imshow(kc);
-% title('Kriging component')
-% drawnow
-% 
-% figure
-% imshow(innov);
-% title('Innovation component')
-% drawnow
