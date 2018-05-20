@@ -33,8 +33,7 @@ set(handles.uibuttongroup_ciz, 'Visible', 'off');
 addpath('C:\Users\vega_\Documents\GitHub\Exemplar_Based_Inpainting\Tutarli_Tasima_Toolbox',...
     'C:\Users\vega_\Documents\GitHub\Exemplar_Based_Inpainting\Real_Time_Cahn_Hilliard',...
     'C:\Users\vega_\Documents\GitHub\Exemplar_Based_Inpainting\Cahn_Hilliard_Toolbox',...
-    'C:\Users\vega_\Documents\GitHub\Exemplar_Based_Inpainting\Ornek_Bazli_Toolbox',...
-    'C:\Users\vega_\Documents\GitHub\Exemplar_Based_Inpainting\Gaussian_Toolbox');
+    'C:\Users\vega_\Documents\GitHub\Exemplar_Based_Inpainting\Ornek_Bazli_Toolbox');
 % Update handles structure
 guidata(hObject, handles);
 % UIWAIT makes main wait for user response (see UIRESUME)
@@ -142,6 +141,18 @@ while maske_sayisi<str2double(get(handles.edit_maske_sayisi,'String'));
     imshow(img); hold on; box on;
     maske_sayisi = maske_sayisi + 1;
 end
+
+maskeli_piksel_sayisi = 0; %maskeleme yüzdesi hesaplama
+    for x = 1:480
+        for y = 1:640
+            if img(x,y,1)==0 && img(x,y,2)==255 && img(x,y,3)==0
+                maskeli_piksel_sayisi = maskeli_piksel_sayisi + 1;
+            end
+        end
+    end
+    maske_yuzdesi = double(maskeli_piksel_sayisi./(64.*48));
+    set(handles.text_maske_yuzdesi,'String',sprintf('Fotoðrafýn maskelenme oraný yüzde %0.2f.', maske_yuzdesi));
+    
 axes(handles.axes1);
 imshow(img);
 set(handles.text_durum,'String','Maske Çizdirildi.');
@@ -171,7 +182,13 @@ set(handles.text_ssim_deger, 'Visible', 'on');
 set(handles.text_psnr_deger, 'Visible', 'on');
 set(handles.text_snr_deger, 'Visible', 'on');
 set(handles.text_durum,'String','Ýçboyama yapýlýyor.');
+
+tic
+
 [i1,i2,i3,c,d]=inpaint7('selected_picture_resized.png','selected_picture_mask.png',[0 255 0]);
+
+t2 = toc; % inpainting süresi hesaplama
+set(handles.text_inpainting_suresi,'String',sprintf('Ýçboyama süresi %0.2f saniyedir.', t2));
 
 figure;
 subplot(231);image(uint8(i2)); title('Original image');
@@ -266,6 +283,18 @@ if strcmpi(button, 'Yes')
 	imshow(img, []);
     imwrite(img,'selected_picture_mask.png');
     set(handles.text_durum,'String','Maske kaydedildi.');
+    
+    maskeli_piksel_sayisi = 0; %maskeleme yüzdesi hesaplama
+    for x = 1:480
+        for y = 1:640
+            if img(x,y,1)==0 && img(x,y,2)==255 && img(x,y,3)==0
+                maskeli_piksel_sayisi = maskeli_piksel_sayisi + 1;
+            end
+        end
+    end
+    maske_yuzdesi = double(maskeli_piksel_sayisi./(64.*48));
+    set(handles.text_maske_yuzdesi,'String',sprintf('Fotoðrafýn maskelenme oraný yüzde %0.2f.', maske_yuzdesi));
+    
 	caption = sprintf('Çizme hýzýnýza göre maskelenecek piksellerin yeri düzgün olmayabilir.\nYavaþ çiziniz.');
 	title(caption, 'FontSize', fontSize);
 else
@@ -281,14 +310,6 @@ function pushbutton_cahn_hilliard_face_Callback(hObject, eventdata, handles)
 
 faceDetector=vision.CascadeObjectDetector('FrontalFaceCART'); %Create a detector object
 profileFaceDetector = vision.CascadeObjectDetector('ProfileFace');
-
-% PARAMETERS
-% maxiter       = 50;
-% param.epsilon = [100 0.9];
-% param.lambda  = 10;
-% param.dt      = 1;
-% frame_number = 5;
-
 
 maxiter = str2double(get(handles.edit_iterasyon_sayisi, 'String'));
 param.epsilon = [str2double(get(handles.edit_epsilon_1,'String')) str2double(get(handles.edit_epsilon_2,'String'))];
@@ -535,6 +556,8 @@ for x = 1 : size(original_image,1)
     end
 end
 
+tic
+
 for radius=1:5
     for i=1:3
         image(:,:,i) = original_image(:,:,i) .* (1-mask);
@@ -549,8 +572,12 @@ end
 best_radius = find(snr==max(snr),1) -1;
 image = inpaint(image, mask, best_radius);
 
+t2 = toc; % inpainting süresi hesaplama
+set(handles.text_inpainting_suresi,'String',sprintf('Ýçboyama süresi %0.2f saniyedir.', t2));
+
 imwrite(image,'inpainted_image.png');
 imshow(image);
+
 set(handles.text_ssim_deger, 'Visible', 'on');
 set(handles.text_psnr_deger, 'Visible', 'on');
 set(handles.text_snr_deger, 'Visible', 'on');
@@ -590,13 +617,18 @@ for x = 1 : size(original_image,1)
 end
 imwrite(mask,'cahn_hilliard_mask.png');
 
-% PARAMETERS
+% Parametreler
 maxiter = str2double(get(handles.edit_iterasyon_sayisi, 'String'));
 param.epsilon = [str2double(get(handles.edit_epsilon_1,'String')) str2double(get(handles.edit_epsilon_2,'String'))];
 param.lambda = str2double(get(handles.edit_lambda,'String'));
 param.dt = str2double(get(handles.edit_dt,'String'));
 
-inpainting_cahn_hilliard_1('selected_picture_resized.png','cahn_hilliard_mask.png',maxiter,param)
+tic
+
+inpainting_cahn_hilliard_1('selected_picture_resized.png','cahn_hilliard_mask.png',maxiter,param);
+
+t2 = toc; % inpainting süresi hesaplama
+set(handles.text_inpainting_suresi,'String',sprintf('Ýçboyama süresi %0.2f saniyedir.', t2));
 
 set(handles.text_durum,'String','Cahn-Hilliard Bazlý Ýçboyama yapýldý.');
 set(handles.text_ssim_deger, 'Visible', 'on');
@@ -632,6 +664,7 @@ function edit_maske_kalinligi_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
 
 
 % --- Executes on button press in pushbutton_sansli.
@@ -676,7 +709,7 @@ end
 allAreas = [measurements.Area];
 [sortedAreas, sortingIndexes] = sort(allAreas, 'descend');
 handIndex = sortingIndexes(1);
-theObject = ismember(labeledImage, handIndex) 
+theObject = ismember(labeledImage, handIndex);
 theObject = theObject > 0;
 
 for x=1:size(grayImage,1)
@@ -690,6 +723,18 @@ for x=1:size(grayImage,1)
 end
 imwrite(mask,'selected_picture_mask.png');
 imshow(mask);
+
+maskeli_piksel_sayisi = 0; %maskeleme yüzdesi hesaplama
+    for x = 1:480
+        for y = 1:640
+            if mask(x,y,1)==0 && mask(x,y,2)==255 && mask(x,y,3)==0
+                maskeli_piksel_sayisi = maskeli_piksel_sayisi + 1;
+            end
+        end
+    end
+    maske_yuzdesi = double(maskeli_piksel_sayisi./(64.*48));
+    set(handles.text_maske_yuzdesi,'String',sprintf('Fotoðrafýn maskelenme oraný yüzde %0.2f.', maske_yuzdesi));
+    
 set(handles.text_durum,'String','Olasý maske kaydedildi.');
 
 
@@ -753,7 +798,7 @@ measurements = regionprops(labeledImage, 'BoundingBox', 'Area');
 allAreas = [measurements.Area];
 [sortedAreas, sortingIndexes] = sort(allAreas, 'descend');
 handIndex = sortingIndexes(1);
-theObject = ismember(labeledImage, handIndex) 
+theObject = ismember(labeledImage, handIndex);
 theObject = theObject > 0;
 
 for x = 0 : size(theObject,1)-1
@@ -770,7 +815,20 @@ end
 
 imwrite(mask,'selected_picture_mask.png');
 imshow(mask);
+
+maskeli_piksel_sayisi = 0; %maskeleme yüzdesi hesaplama
+    for x = 1:480
+        for y = 1:640
+            if mask(x,y,1)==0 && mask(x,y,2)==255 && mask(x,y,3)==0
+                maskeli_piksel_sayisi = maskeli_piksel_sayisi + 1;
+            end
+        end
+    end
+    maske_yuzdesi = double(maskeli_piksel_sayisi./(64.*48));
+    set(handles.text_maske_yuzdesi,'String',sprintf('Fotoðrafýn maskelenme oraný yüzde %0.2f.', maske_yuzdesi));
+    
 set(handles.text_durum,'String','Yüz maske olarak kaydedildi.');
+
 
 % --- Executes on slider movement.
 function slider_threshold_edge_Callback(hObject, eventdata, handles)
@@ -784,6 +842,7 @@ slider_degeri = get(hObject,'Value');
 set(handles.text_thr_edge_deger,'String',num2str(slider_degeri));
 
 
+
 % --- Executes during object creation, after setting all properties.
 function slider_threshold_edge_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to slider_threshold_edge (see GCBO)
@@ -794,6 +853,7 @@ function slider_threshold_edge_CreateFcn(hObject, eventdata, handles)
 if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
+
 
 
 % --- Executes on button press in pushbutton_insan_bul.
@@ -823,7 +883,13 @@ for k = 1:size(BB,1)
 a = round(BB(k,2));
 b = round(BB(k,1));
 c = round(BB(k,2)+BB(k,4));
+while c > size(img,1)
+    c = c-1;
+end
 d = round(BB(k,1)+BB(k,3));
+while d > size(img,1)
+    d = d-1;
+end
 
 body_edge = edge(img( a : c, b : d ),'canny',...
     str2double(get(handles.text_thr_edge_deger,'String')));
@@ -835,7 +901,7 @@ measurements = regionprops(labeledImage, 'BoundingBox', 'Area');
 allAreas = [measurements.Area];
 [sortedAreas, sortingIndexes] = sort(allAreas, 'descend');
 handIndex = sortingIndexes(1);
-theObject = ismember(labeledImage, handIndex) 
+theObject = ismember(labeledImage, handIndex);
 theObject = theObject > 0;
 
 for x = 0 : size(theObject,1)-1
@@ -852,4 +918,16 @@ end
 
 imwrite(mask,'selected_picture_mask.png');
 imshow(mask);
+
+maskeli_piksel_sayisi = 0; %maskeleme yüzdesi hesaplama
+    for x = 1:480
+        for y = 1:640
+            if mask(x,y,1)==0 && mask(x,y,2)==255 && mask(x,y,3)==0
+                maskeli_piksel_sayisi = maskeli_piksel_sayisi + 1;
+            end
+        end
+    end
+    maske_yuzdesi = double(maskeli_piksel_sayisi./(64.*48));
+    set(handles.text_maske_yuzdesi,'String',sprintf('Fotoðrafýn maskelenme oraný yüzde %0.2f.', maske_yuzdesi));
+    
 set(handles.text_durum,'String','Ýnsan maske olarak kaydedildi.');
