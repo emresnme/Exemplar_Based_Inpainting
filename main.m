@@ -191,11 +191,11 @@ t2 = toc; % inpainting süresi hesaplama
 set(handles.text_inpainting_suresi,'String',sprintf('Ýçboyama süresi %0.2f saniyedir.', t2));
 
 figure;
-subplot(231);image(uint8(i2)); title('Original image');
-subplot(232);image(uint8(i3)); title('Fill region');
-subplot(233);image(uint8(i1)); title('Inpainted image');
-subplot(234);imagesc(c); title('Confidence term');
-subplot(235);imagesc(d); title('Data term');
+subplot(231);image(uint8(i2)); title('Orjinal Resim');
+subplot(232);image(uint8(i3)); title('Maskeleme Alaný');
+subplot(233);image(uint8(i1)); title('Ýçboyama Yapýldýktan Sonraki Resim');
+subplot(234);imagesc(c); title('Güven Terimi');
+subplot(235);imagesc(d); title('Veri Terimi');
 
 imwrite(uint8(i1),'inpainted_image.png');
 axes(handles.axes1);
