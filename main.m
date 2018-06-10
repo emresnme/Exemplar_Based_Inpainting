@@ -74,6 +74,8 @@ set(handles.text_snr_deger, 'Visible', 'off');
 set(handles.text_ssim, 'String', '');
 set(handles.text_psnr, 'String', '');
 set(handles.text_snr, 'String', '');
+set(handles.text_inpainting_suresi, 'String', '');
+set(handles.text_maske_yuzdesi, 'String', '');
 
 % --- Executes on button press in radiobutton_ciz.
 function radiobutton_ciz_Callback(hObject, eventdata, handles)
@@ -570,7 +572,9 @@ for i=1:3
     image(:,:,i) = original_image(:,:,i) .* (1-mask);
 end
 best_radius = find(snr==max(snr),1) -1;
+
 image = inpaint(image, mask, best_radius);
+
 
 t2 = toc; % inpainting süresi hesaplama
 set(handles.text_inpainting_suresi,'String',sprintf('Ýçboyama süresi %0.2f saniyedir.', t2));
@@ -895,6 +899,12 @@ body_edge = edge(img( a : c, b : d ),'canny',...
     str2double(get(handles.text_thr_edge_deger,'String')));
 body_edge = bwmorph(bwmorph(imfill(imclose(bwmorph(body_edge,'thicken',10),se),'holes'),'shrink',5),'spur');
 
+% body_edge = bwmorph(body_edge,'thicken',10);
+% body_edge = imclose(body_edge,se);
+% body_edge = imfill(body_edge,'holes');
+% body_edge = bwmorph(body_edge,'shrink',5);
+% body_edge = bwmorph(body_edge,'spur');
+
 labeledImage = bwlabel(body_edge);
 measurements = regionprops(labeledImage, 'BoundingBox', 'Area');
 
@@ -907,6 +917,16 @@ theObject = theObject > 0;
 for x = 0 : size(theObject,1)-1
     for y = 0 : size(theObject,2)-1
         if theObject(x+1,y+1) == 1
+            mask(a+x,b+y,1)=0;
+            mask(a+x,b+y,2)=255;
+            mask(a+x,b+y,3)=0;
+        end
+    end
+end
+
+for x = 0 : size(body_edge,1)-1
+    for y = 0 : size(body_edge,2)-1
+        if body_edge(x+1,y+1) == 1
             mask(a+x,b+y,1)=0;
             mask(a+x,b+y,2)=255;
             mask(a+x,b+y,3)=0;
